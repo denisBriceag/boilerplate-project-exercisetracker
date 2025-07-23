@@ -10,7 +10,6 @@ import bodyParser from "body-parser";
 import { ReflectiveInjector } from "injection-js";
 
 import { UserRouter } from "@routes/users.routes";
-import { errorInterceptor } from "@middleware";
 import { UserService } from "@services/user.service";
 import { appDataSource } from "@configs";
 
@@ -61,8 +60,6 @@ app.get("/", (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-
-app.use(errorInterceptor);
 
 appDataSource
   .initialize()

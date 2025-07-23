@@ -29,11 +29,11 @@ export class UserService {
         SQLITE_ERROR_MAP[error.driverError.code]
       ) {
         res
-          .status(500)
+          .status(409)
           .json(
             new HttpError(
-              SQLITE_ERROR_MAP[error.driverError.code] as string,
-              500,
+              SQLITE_ERROR_MAP[error.driverError.code]!.message as string,
+              SQLITE_ERROR_MAP[error.driverError.code]!.code as number,
             ),
           );
 
@@ -88,7 +88,7 @@ export class UserService {
 
       await exerciseRepository.save(exercise);
 
-      return res.json(
+      return res.status(201).json(
         new HttpSuccess<CreatedExerciseResponse>(
           {
             userId: user.id,
@@ -122,20 +122,24 @@ export class UserService {
         .createQueryBuilder("exercise")
         .where("exercise.userId = :userId", { userId });
 
+      if (from || to) query = query.orderBy("exercise.date", "ASC");
+
       if (from) query = query.andWhere("exercise.date >= :from", { from });
       if (to) query = query.andWhere("exercise.date <= :to", { to });
 
-      if (limit) query = query.limit(Number(limit));
+      const sortedExercises = await query.getMany();
 
-      const exercises = await query.getMany();
+      const limited = limit
+        ? sortedExercises.slice(0, +limit)
+        : sortedExercises;
 
       res.status(200).json(
         new HttpSuccess<UserExerciseLog>(
           {
             id: user.id,
             username: user.username,
-            count: exercises.length,
-            logs: exercises.map(({ id, description, duration, date }) => ({
+            count: sortedExercises.length,
+            logs: limited.map(({ id, description, duration, date }) => ({
               id,
               description,
               duration,

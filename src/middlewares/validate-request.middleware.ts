@@ -16,8 +16,6 @@ export function validateRequest<T>(
         enableImplicitConversion: true,
       });
 
-      console.log(instance);
-
       const errors = await validate(instance as object, {
         whitelist: true,
       });

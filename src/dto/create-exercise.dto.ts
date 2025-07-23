@@ -27,6 +27,10 @@ export class CreateExerciseDto {
 
   @IsOptional()
   @IsDateString()
-  @Transform(({ value }) => (value ? new Date(value).toISOString() : undefined))
+  @Transform(({ value }) => {
+    const date = new Date(value);
+
+    return isNaN(date.getTime()) ? value : date.toISOString();
+  })
   date?: string;
 }
