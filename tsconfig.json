@@ -21,6 +21,8 @@
       "@models": ["src/models/index.ts"],
       "@entities": ["src/entities/index.ts"],
       "@dto": ["src/dto/index.ts"],
+      "@utils": ["src/utils/index.ts"],
+      "@constants": ["src/constants/index.ts"],
       "@configs": ["src/configs/index.ts"]
     },
 

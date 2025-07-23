@@ -9,18 +9,12 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UserRouter = exports.userRoutes = void 0;
+exports.UserRouter = void 0;
 const express_1 = require("express");
 const user_service_1 = require("@services/user.service");
 const _middleware_1 = require("@middleware");
 const _dto_1 = require("@dto");
 const injection_js_1 = require("injection-js");
-exports.userRoutes = (0, express_1.Router)();
-const userService = new user_service_1.UserService();
-exports.userRoutes.get("", userService.getUsers);
-exports.userRoutes.post("", (0, _middleware_1.validateRequest)(_dto_1.CreateUserDto), userService.createUser);
-exports.userRoutes.post(":_id/exercises", (0, _middleware_1.validateRequest)(_dto_1.CreateExerciseDto), userService.addExercise);
-exports.userRoutes.get(":_id/logs", (0, _middleware_1.validateRequest)(_dto_1.CreateExerciseDto), userService.getUserLogs);
 let UserRouter = class UserRouter {
     _injector;
     routes;
@@ -36,8 +30,8 @@ let UserRouter = class UserRouter {
         const userService = this._injector.get(user_service_1.UserService);
         this.routes.get("", userService.getUsers);
         this.routes.post("", (0, _middleware_1.validateRequest)(_dto_1.CreateUserDto), userService.createUser);
-        this.routes.post(":_id/exercises", (0, _middleware_1.validateRequest)(_dto_1.CreateExerciseDto), () => userService.addExercise);
-        this.routes.get(":_id/logs", userService.getUserLogs);
+        this.routes.post("/:_id/exercises", (0, _middleware_1.validateRequest)(_dto_1.CreateExerciseDto), userService.addExercise);
+        this.routes.get("/:_id/logs", userService.getUserLogs);
     }
 };
 exports.UserRouter = UserRouter;

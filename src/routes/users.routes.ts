@@ -1,8 +1,14 @@
 import { Router } from "express";
 import { UserService } from "@services/user.service";
 import { validateRequest } from "@middleware";
-import { CreateExerciseDto, CreateUserDto } from "@dto";
+import {
+  CreateExerciseDto,
+  CreateUserDto,
+  GetLogsQueryDto,
+  UserIdParamDto,
+} from "@dto";
 import { Injectable, Injector } from "injection-js";
+import { ValidationType } from "../enums/validation-type.enum";
 
 @Injectable()
 export class UserRouter {
@@ -23,14 +29,20 @@ export class UserRouter {
     this.routes.get("", userService.getUsers);
     this.routes.post(
       "",
-      validateRequest(CreateUserDto),
+      validateRequest(CreateUserDto, ValidationType.BODY),
       userService.createUser,
     );
     this.routes.post(
-      ":_id/exercises",
-      validateRequest(CreateExerciseDto),
-      () => userService.addExercise,
+      "/:_id/exercises",
+      validateRequest(UserIdParamDto, ValidationType.PARAMS),
+      validateRequest(CreateExerciseDto, ValidationType.BODY),
+      userService.addExercise,
     );
-    this.routes.get(":_id/logs", userService.getUserLogs);
+    this.routes.get(
+      "/:_id/logs",
+      validateRequest(UserIdParamDto, ValidationType.PARAMS),
+      validateRequest(GetLogsQueryDto, ValidationType.QUERY),
+      userService.getUserLogs,
+    );
   }
 }

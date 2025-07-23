@@ -13,7 +13,6 @@ import { UserRouter } from "@routes/users.routes";
 import { errorInterceptor } from "@middleware";
 import { UserService } from "@services/user.service";
 import { appDataSource } from "@configs";
-import { ILayer } from "express-serve-static-core";
 
 // Configure dotenv
 dotenv.config();
@@ -29,15 +28,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 app.use("/api/users", injector.get(UserRouter).getRouter());
-
-console.log(
-  injector
-    .get(UserRouter)
-    .getRouter()
-    .stack.forEach((r: ILayer, i: number) =>
-      console.log(`${i} - `, r.route?.path),
-    ),
-);
 
 app.use(morgan("dev"));
 

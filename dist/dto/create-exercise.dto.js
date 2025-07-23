@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CreateExerciseDto = void 0;
 const class_validator_1 = require("class-validator");
+const class_transformer_1 = require("class-transformer");
 class CreateExerciseDto {
     description;
     duration;
@@ -26,11 +27,14 @@ __decorate([
 __decorate([
     (0, class_validator_1.IsInt)(),
     (0, class_validator_1.Min)(1),
+    (0, class_validator_1.Max)(1000),
+    (0, class_transformer_1.Type)(() => Number),
     __metadata("design:type", Number)
 ], CreateExerciseDto.prototype, "duration", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsDateString)(),
+    (0, class_transformer_1.Transform)(({ value }) => (value ? new Date(value).toISOString() : undefined)),
     __metadata("design:type", String)
 ], CreateExerciseDto.prototype, "date", void 0);
 //# sourceMappingURL=create-exercise.dto.js.map

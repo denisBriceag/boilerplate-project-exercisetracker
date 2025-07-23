@@ -1,42 +1,43 @@
-import { Request, Response, NextFunction } from "express";
-import { validate } from "class-validator";
 import { plainToInstance } from "class-transformer";
+import { validate } from "class-validator";
+import { NextFunction, Request, Response } from "express";
 
-/**
- * @description Instantiate the request body as Dto instance
- * If body fails to validate - returns an error
- *
- * @example Sample error response:
- * {
- *   "error": "Validation failed",
- *   "details": [
- *     {
- *       "property": "username",
- *       "constraints": {
- *         "isLength": "username must be longer than or equal to 1 character"
- *       }
- *     }
- *   ]
- * }
- *
- * */
-export function validateRequest(type: any) {
+import { mapValidationErrors } from "@utils";
+import { HttpError } from "@models";
+import { ValidationType } from "../enums/validation-type.enum";
+
+export function validateRequest<T>(
+  dto: new () => T,
+  validationType: ValidationType,
+) {
   return async (req: Request, res: Response, next: NextFunction) => {
-    const instance = plainToInstance(type, req.body);
-    const errors = await validate(instance);
-
-    if (errors.length > 0) {
-      return res.status(400).json({
-        error: "Validation failed",
-        details: errors.map((e) => ({
-          property: e.property,
-          constraints: e.constraints,
-        })),
+    try {
+      const instance = plainToInstance<T, unknown>(dto, req[validationType], {
+        enableImplicitConversion: true,
       });
+
+      console.log(instance);
+
+      const errors = await validate(instance as object, {
+        whitelist: true,
+      });
+
+      if (errors.length > 0) {
+        return res
+          .status(400)
+          .json(new HttpError(mapValidationErrors(errors), 400));
+      }
+
+      if (validationType === ValidationType.QUERY) {
+        // request.query has only getter
+        Object.assign(req[validationType], instance);
+      } else {
+        req[validationType] = instance;
+      }
+      next();
+    } catch (error) {
+      console.log(error);
+      res.json(new HttpError("Internal validation error", 500));
     }
-
-    req.body = instance;
-
-    next();
   };
 }

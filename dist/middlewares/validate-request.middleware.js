@@ -1,41 +1,30 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.validateRequest = validateRequest;
-const class_validator_1 = require("class-validator");
 const class_transformer_1 = require("class-transformer");
-/**
- * @description Instantiate the request body as Dto instance
- * If body fails to validate - returns an error
- *
- * @example Sample error response:
- * {
- *   "error": "Validation failed",
- *   "details": [
- *     {
- *       "property": "username",
- *       "constraints": {
- *         "isLength": "username must be longer than or equal to 1 character"
- *       }
- *     }
- *   ]
- * }
- *
- * */
-function validateRequest(type) {
+const class_validator_1 = require("class-validator");
+const _utils_1 = require("@utils");
+const _models_1 = require("@models");
+function validateRequest(dto) {
     return async (req, res, next) => {
-        const instance = (0, class_transformer_1.plainToInstance)(type, req.body);
-        const errors = await (0, class_validator_1.validate)(instance);
-        if (errors.length > 0) {
-            return res.status(400).json({
-                error: "Validation failed",
-                details: errors.map((e) => ({
-                    property: e.property,
-                    constraints: e.constraints,
-                })),
+        try {
+            const instance = (0, class_transformer_1.plainToInstance)(dto, req.body, {
+                enableImplicitConversion: true,
             });
+            const errors = await (0, class_validator_1.validate)(instance, {
+                whitelist: true,
+            });
+            if (errors.length > 0) {
+                return res
+                    .status(400)
+                    .json(new _models_1.HttpError((0, _utils_1.mapValidationErrors)(errors), 400));
+            }
+            req.body = (0, class_transformer_1.instanceToPlain)(instance);
+            next();
         }
-        req.body = instance;
-        next();
+        catch (error) {
+            res.status(500).json(new _models_1.HttpError("Internal validation error", 500));
+        }
     };
 }
 //# sourceMappingURL=validate-request.middleware.js.map

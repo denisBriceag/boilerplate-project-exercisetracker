@@ -26,11 +26,7 @@ exports.injector = injection_js_1.ReflectiveInjector.resolveAndCreate([
 const app = (0, express_1.default)();
 app.use(body_parser_1.default.urlencoded({ extended: true }));
 app.use(body_parser_1.default.json());
-app.use("/api/users", users_routes_1.userRoutes);
-console.log(exports.injector
-    .get(users_routes_1.UserRouter)
-    .getRouter()
-    .stack.forEach((r, i) => console.log(`${i} - `, r.route?.path)));
+app.use("/api/users", exports.injector.get(users_routes_1.UserRouter).getRouter());
 app.use((0, morgan_1.default)("dev"));
 app.use((0, helmet_1.default)({
     contentSecurityPolicy: {

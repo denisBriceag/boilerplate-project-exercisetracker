@@ -1,8 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserService = void 0;
+const typeorm_1 = require("typeorm");
 const _entities_1 = require("@entities");
 const _configs_1 = require("@configs");
+const _constants_1 = require("@constants");
+const _models_1 = require("@models");
 class UserService {
     async createUser(req, res) {
         try {
@@ -14,31 +17,35 @@ class UserService {
             res.status(201).json({ username: user.username, id: user.id });
         }
         catch (error) {
-            console.error("Create user error:", error);
-            res.status(500).json({ error: "Internal server error", details: error });
+            if (error instanceof typeorm_1.QueryFailedError &&
+                _constants_1.SQLITE_ERROR_MAP[error.driverError.code]) {
+                res
+                    .status(500)
+                    .json(new _models_1.HttpError(_constants_1.SQLITE_ERROR_MAP[error.driverError.code], 500));
+                return;
+            }
+            res.status(500).json(new _models_1.HttpError(error, 500));
         }
     }
     async getUsers(req, res) {
         try {
             const userRepository = _configs_1.appDataSource.getRepository(_entities_1.User);
             const users = await userRepository.find();
-            res.status(200).json(users);
+            res.status(200).json(new _models_1.HttpSuccess(users, 200));
         }
         catch (error) {
-            console.error("Error fetching users:", error);
-            res.status(500).json({ error: "Failed to fetch users" });
+            res.status(500).json(new _models_1.HttpError("Failed to get users", 500));
         }
     }
     async addExercise(req, res) {
         try {
-            console.log(" addExercise route hit");
             const userRepository = _configs_1.appDataSource.getRepository(_entities_1.User);
             const exerciseRepository = _configs_1.appDataSource.getRepository(_entities_1.Exercise);
-            const user = await userRepository.findOneByOrFail({
-                id: parseInt(req.params._id),
-            });
-            if (!user)
-                res.status(404).json({ error: "User not found" });
+            const userId = parseInt(req.params._id, 10);
+            const user = await userRepository.findOneBy({ id: userId });
+            if (!user) {
+                return res.status(404).json(new _models_1.HttpError("User not found", 404));
+            }
             const { description, duration, date } = req.body;
             const exercise = new _entities_1.Exercise();
             exercise.description = description;
@@ -46,16 +53,16 @@ class UserService {
             exercise.date = date ? new Date(date) : new Date();
             exercise.user = user;
             await exerciseRepository.save(exercise);
-            res.json({
+            return new _models_1.HttpSuccess({
                 userId: user.id,
                 exerciseId: exercise.id,
                 description: exercise.description,
                 duration: exercise.duration,
                 date: exercise.date,
-            });
+            }, 201);
         }
         catch (error) {
-            console.log(error, "AAAAAAA");
+            return res.status(500).json(new _models_1.HttpError("Failed to add exercise", 500));
         }
     }
     async getUserLogs(req, res) {
@@ -65,7 +72,7 @@ class UserService {
         const userId = parseInt(req.params._id);
         const user = await userRepository.findOneByOrFail({ id: userId });
         if (!user)
-            res.status(404).json({ error: "User not found" });
+            res.status(404).json(new _models_1.HttpError(`No user with id ${userId}`, 404));
         let query = exerciseRepository
             .createQueryBuilder("exercise")
             .where("exercise.userId = :userId", { userId });
@@ -76,7 +83,7 @@ class UserService {
         if (limit)
             query = query.limit(Number(limit));
         const exercises = await query.getMany();
-        res.json({
+        res.status(200).json(new _models_1.HttpSuccess({
             id: user.id,
             username: user.username,
             count: exercises.length,
@@ -86,7 +93,7 @@ class UserService {
                 duration,
                 date,
             })),
-        });
+        }, 200));
     }
 }
 exports.UserService = UserService;

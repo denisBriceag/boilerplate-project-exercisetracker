@@ -5,7 +5,7 @@ export interface User {
   username: string;
 }
 
-interface UserExerciseLog extends User {
+export interface UserExerciseLog extends User {
   logs: Exercise[];
   count: number;
 }
