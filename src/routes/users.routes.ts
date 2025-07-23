@@ -12,33 +12,36 @@ import { ValidationType } from "../enums/validation-type.enum";
 
 @Injectable()
 export class UserRouter {
-  routes: Router;
+  private readonly _routes: Router;
 
   constructor(private readonly _injector: Injector) {
-    this.routes = Router();
+    this._routes = Router();
     this._initializeRoutes();
   }
 
   getRouter(): Router {
-    return this.routes;
+    return this._routes;
   }
 
   private _initializeRoutes(): void {
     const userService = this._injector.get(UserService);
 
-    this.routes.get("", userService.getUsers);
-    this.routes.post(
+    this._routes.get("", userService.getUsers);
+
+    this._routes.post(
       "",
       validateRequest(CreateUserDto, ValidationType.BODY),
       userService.createUser,
     );
-    this.routes.post(
+
+    this._routes.post(
       "/:_id/exercises",
       validateRequest(UserIdParamDto, ValidationType.PARAMS),
       validateRequest(CreateExerciseDto, ValidationType.BODY),
       userService.addExercise,
     );
-    this.routes.get(
+
+    this._routes.get(
       "/:_id/logs",
       validateRequest(UserIdParamDto, ValidationType.PARAMS),
       validateRequest(GetLogsQueryDto, ValidationType.QUERY),
