@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { QueryFailedError } from "typeorm";
+import { DateTime } from "luxon";
 
 import { Exercise, User } from "@entities";
 import { appDataSource } from "@configs";
@@ -83,8 +84,16 @@ export class UserService {
       const exercise = new Exercise();
       exercise.description = description;
       exercise.duration = duration;
-      exercise.date = date ? new Date(date) : new Date();
       exercise.user = user;
+
+      if (date) {
+        exercise.date = DateTime.fromISO(date, { zone: "utc" })
+          .startOf("day")
+          .toUTC()
+          .toJSDate();
+      } else {
+        exercise.date = DateTime.local().startOf("day").toUTC().toJSDate();
+      }
 
       await exerciseRepository.save(exercise);
 
@@ -113,7 +122,7 @@ export class UserService {
       const { from, to, limit } = req.query;
       const userId = parseInt(req.params._id as string);
 
-      const user = await userRepository.findOneByOrFail({ id: userId });
+      const user = await userRepository.findOne({ where: { id: userId } });
 
       if (!user)
         res.status(404).json(new HttpError(`No user with id ${userId}`, 404));
@@ -124,8 +133,21 @@ export class UserService {
 
       if (from || to) query = query.orderBy("exercise.date", "ASC");
 
-      if (from) query = query.andWhere("exercise.date >= :from", { from });
-      if (to) query = query.andWhere("exercise.date <= :to", { to });
+      if (from) {
+        const fromDate = DateTime.fromISO(from as string, { zone: "utc" })
+          .startOf("day")
+          .toJSDate();
+
+        query = query.andWhere("exercise.date >= :from", { from: fromDate });
+      }
+
+      if (to) {
+        const toDate = DateTime.fromISO(to as string, { zone: "utc" })
+          .endOf("day")
+          .toJSDate();
+
+        query = query.andWhere("exercise.date <= :to", { to: toDate });
+      }
 
       const sortedExercises = await query.getMany();
 
@@ -136,8 +158,8 @@ export class UserService {
       res.status(200).json(
         new HttpSuccess<UserExerciseLog>(
           {
-            id: user.id,
-            username: user.username,
+            id: user!.id,
+            username: user!.username,
             count: sortedExercises.length,
             logs: limited.map(({ id, description, duration, date }) => ({
               id,
@@ -149,7 +171,7 @@ export class UserService {
           200,
         ),
       );
-    } catch {
+    } catch (err) {
       return res.status(500).json(new HttpError("Internal server error", 500));
     }
   }

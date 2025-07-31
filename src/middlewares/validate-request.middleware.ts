@@ -34,7 +34,6 @@ export function validateRequest<T>(
       }
       next();
     } catch (error) {
-      console.log(error);
       res.json(new HttpError("Internal validation error", 500));
     }
   };

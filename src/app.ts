@@ -68,4 +68,6 @@ appDataSource
       console.log(`Server running on http://localhost:${PORT}`);
     });
   })
-  .catch(() => console.error("☹️ DB failed to start"));
+  .catch(
+    (error) => (console.error("☹️ DB failed to start"), console.log(error)),
+  );

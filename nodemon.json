@@ -1,6 +1,11 @@
 {
-  "watch": ["src"],
-  "ext": "ts",
-  "ignore": ["dist"],
-  "exec": "ts-node -r tsconfig-paths/register src/app.ts"
+  "watch": ["dist/src"],
+  "ext": "js",
+  "ignore": [
+    "dist/public",
+    "dist/views",
+    "dist/**/*.map"
+  ],
+  "exec": "node dist/src/app.js",
+  "delay": "300"
 }

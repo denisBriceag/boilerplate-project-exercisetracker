@@ -4,11 +4,11 @@
   "description": "A REST API project, part of Free Code Camp's curriculum",
   "type": "commonjs",
   "scripts": {
-    "tsc": "tsc",
-    "dev": "nodemon",
-    "build": "tsc -p tsconfig.build.json && npm run copy:assets",
-    "copy:assets": "cp -r src/views dist/ && cp -r public dist/",
-    "start": "node -r tsconfig-paths/register dist/app.js"
+    "dev": "npm run copy:assets && concurrently \"npm run build:watch\" \"nodemon dist/app.js\"",
+    "build": "swc src --out-dir dist",
+    "build:watch": "swc src -w --out-dir dist",
+    "copy:assets": "cp -r src/views dist/src/ && cp -r public dist/src/",
+    "start": "node dist/app.js"
   },
   "dependencies": {
     "class-transformer": "^0.5.1",
@@ -19,6 +19,7 @@
     "helmet": "^8.1.0",
     "hpp": "^0.2.3",
     "injection-js": "^2.5.0",
+    "luxon": "^3.7.1",
     "morgan": "^1.10.0",
     "nodemon": "^3.1.10",
     "reflect-metadata": "^0.2.2",
@@ -32,15 +33,21 @@
   "license": "MIT",
   "keywords": [
     "node",
-    "express"
+    "express",
+    "swc"
   ],
   "devDependencies": {
+    "@swc/cli": "^0.7.8",
+    "@swc/core": "^1.13.3",
+    "@swc/plugin-transform-imports": "^9.0.2",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/helmet": "^0.0.48",
     "@types/hpp": "^0.2.6",
+    "@types/luxon": "^3.7.1",
     "@types/morgan": "^1.9.10",
     "@types/node": "^24.0.12",
+    "concurrently": "^9.2.0",
     "prettier": "^3.6.2",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",

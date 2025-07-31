@@ -10,7 +10,7 @@ export class Exercise extends BaseEntity {
   @Column("int")
   duration: number;
 
-  @Column()
+  @Column({ type: "datetime" })
   date: Date;
 
   @ManyToOne(() => User, (user) => user.exercises, { onDelete: "CASCADE" })

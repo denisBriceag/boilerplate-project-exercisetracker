@@ -1,5 +1,6 @@
 .env
 dist
 .idea
+.swc
 node_modules
 db.sqlite

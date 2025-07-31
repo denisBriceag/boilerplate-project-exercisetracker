@@ -1,0 +1,43 @@
+{
+  "exclude": "node_modules/",
+  "jsc": {
+    "parser": {
+      "syntax": "typescript",
+      "topLevelAwait": true,
+      "decorators": true
+    },
+    "transform": {
+      "legacyDecorator": true,
+      "decoratorMetadata": true
+    },
+    "paths": {
+      "@routes/*": ["src/routes/*"],
+      "@services/*": ["src/services/*"],
+      "@middleware": ["src/middlewares/index.ts"],
+      "@models": ["src/models/index.ts"],
+      "@entities": ["src/entities/index.ts"],
+      "@dto": ["src/dto/index.ts"],
+      "@utils": ["src/utils/index.ts"],
+      "@constants": ["src/constants/index.ts"],
+      "@configs": ["src/configs/index.ts"]
+    },
+    "target": "esnext",
+    "baseUrl": ".",
+    "experimental": {
+      "plugins": [
+        [
+          "@swc/plugin-transform-imports",
+          {
+            "^(.*?)(\\.ts)$": {
+              "skipDefaultConversion": true,
+              "transform": "{{matches.[1]}}.js"
+            }
+          }
+        ]
+      ]
+    }
+  },
+  "module": {
+    "type": "commonjs"
+  }
+}
